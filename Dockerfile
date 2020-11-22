@@ -1,7 +1,4 @@
-FROM nvidia/cuda:10.1-runtime-ubuntu16.04
-
-ENV PATH="/root/miniconda3/bin:${PATH}"
-ARG PATH="/root/miniconda3/bin:${PATH}"
+FROM nvidia/cuda:10.2-runtime-ubuntu18.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
             git \
@@ -15,13 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
             wget \
             tmux \
             screen \
-            pciutils
-
-RUN wget \
-    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && mkdir /root/.conda \
-    && bash Miniconda3-latest-Linux-x86_64.sh -b \
-    && rm -f Miniconda3-latest-Linux-x86_64.sh
+            pciutils \
+            python3 python3-pip python3-wheel python3-setuptools swig python3-dev
 
 # Default to utf-8 encodings in python
 # Can verify in container with:
@@ -32,18 +24,21 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 
-RUN conda install pytorch cudatoolkit=10.0 -c pytorch
-RUN conda install faiss-gpu cudatoolkit=10.0 -c pytorch
-RUN conda install tensorboard nltk numpy tqdm
-RUN conda install -c conda-forge jupyterlab
-RUN conda install -c conda-forge notebook
-RUN pip install sacrebleu transformers
-RUN pip install gsutil
-RUN pip install ipdb
-RUN pip install spicy
-RUN pip install transformers
-RUN pip install boto3
-RUN pip install tqdm
-RUN pip install json
+RUN pip3 install torch
+#RUN pip3 install faiss-gpu
+RUN pip3 install tensorboard nltk numpy tqdm
+RUN pip3 install sacrebleu transformers
+RUN pip3 install gsutil
+RUN pip3 install ipdb
+RUN pip3 install spacy
+RUN pip3 install transformers
+RUN pip3 install boto3
+RUN pip3 install tqdm
+RUN pip3 install awscli
+RUN python3 -m spacy download --user en_core_web_sm
+RUN pip3 install tensorboardX
+
+COPY . /opt/simpletod
+WORKDIR /opt/simpletod
 
 CMD bash

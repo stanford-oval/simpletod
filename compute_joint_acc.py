@@ -20,6 +20,7 @@ data = json.load(open(args.eval_file, 'r'))
 
 num_turns = 0
 joint_acc = 0
+up_to_error_acc = 0
 
 clean_tokens = ['<|endoftext|>']
 
@@ -28,6 +29,7 @@ for dial in data:
     dialogue_target = data[dial]['target_turn_belief']
     model_context = data[dial]['model_context']
 
+    prev_ok = True
     for turn_id, (turn_target, turn_pred, turn_context) in enumerate(
             zip(dialogue_target, dialogue_pred, model_context)):
 
@@ -53,26 +55,30 @@ for dial in data:
         if set(turn_target) == set(turn_pred):
             joint_acc += 1
             join_flag = True
+            if prev_ok:
+                up_to_error_acc += 1
+        else:
+            prev_ok = False
         
-        elif args.type2_cleaning: # check for possible Type 2 noisy annotations
-            flag = True
-            for bs in turn_target:
-                if bs not in turn_pred:
-                    flag = False
-                    break
-            if flag:
-                for bs in turn_pred:
-                    if bs not in dialogue_target_final:
-                        flag = False
-                        break
+        #elif args.type2_cleaning: # check for possible Type 2 noisy annotations
+        #    flag = True
+        #    for bs in turn_target:
+        #        if bs not in turn_pred:
+        #            flag = False
+        #            break
+        #    if flag:
+        #        for bs in turn_pred:
+        #            if bs not in dialogue_target_final:
+        #                flag = False
+        #                break
 
-            if flag: # model prediction might be correct if found in Type 2 list of noisy annotations
-                dial_name = dial.split('.')[0]
-                if dial_name in IGNORE_TURNS_TYPE2 and turn_id in IGNORE_TURNS_TYPE2[dial_name]: # ignore these turns
-                    pass
-                else:
-                    joint_acc += 1
-                    join_flag = True
+        #    if flag: # model prediction might be correct if found in Type 2 list of noisy annotations
+        #        dial_name = dial.split('.')[0]
+        #        if dial_name in IGNORE_TURNS_TYPE2 and turn_id in IGNORE_TURNS_TYPE2[dial_name]: # ignore these turns
+        #            pass
+        #        else:
+        #            joint_acc += 1
+        #            join_flag = True
 
         num_turns += 1
 
@@ -80,3 +86,6 @@ joint_acc /= num_turns
 
 print('joint accuracy: {}'.format(joint_acc))
 
+up_to_error_acc /= num_turns
+
+print('up-to-error accuracy: {}'.format(up_to_error_acc))

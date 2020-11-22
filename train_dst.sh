@@ -9,7 +9,7 @@ export TRAIN_FILE=./resources/gpt2/train.history_belief
 export TEST_FILE=./resources/gpt2/val.history_belief
 
 
-CUDA_VISIBLE_DEVICES=$1 python main.py \
+python3 main.py \
     --output_dir=$OUTPUT \
     --model_type=$MODEL \
     --model_name_or_path=$MODEL_NAME \
